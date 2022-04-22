@@ -12,7 +12,7 @@ using std::setprecision;
 
 #include "ArrayNumbers.h"
 
-ArrayNumbers::ArrayNumbers(int numberElements){                     
+ArrayNumbers::ArrayNumbers(int numberElements){                     //ARCHIVO CLASE.CPP
     nElements=numberElements;
 }
 
@@ -41,20 +41,10 @@ void ArrayNumbers::bubbleSort(void){
     }
 }
 
-void ArrayNumbers::findFrequencyDistribution(){
+void ArrayNumbers::findFrequencyDistribution(void){
     float cAux;
-
-    C=new int[nClasses];
-    intervals=new float*[nClasses];
-    frDistribution=new int[nClasses];
-
-    for(int i=0;i<nClasses;i++)
-        intervals[i]=new float[2];
-
-    for(int i=0;i<nClasses;i++)
-        *(frDistribution+i)=0;
-
-    domainBottom=*element;
+    
+    domainBottom=(*element);
     domainTop=*(element+nElements-1);
     range=domainTop-domainBottom;
 
@@ -62,21 +52,31 @@ void ArrayNumbers::findFrequencyDistribution(){
 
     cout<<"How many classes do you want?    ";
     cin>>nClasses;
+    
+    frDistribution=new int[nClasses];
+    C=new int[nClasses];
+    intervals=new float*[nClasses];
+
+    for(int i=0;i<nClasses;i++)
+        intervals[i]=new float[2];
+
+    for(int i=0;i<nClasses;i++)
+        *(frDistribution+i)=0;
 
     cAux=range/nClasses;
     
     for(int i=0;i<nClasses;i++)
         (*(C+i))=round(cAux);
 
-    *(*(intervals))=domainBottom;
-    *(*(intervals)+1)=domainBottom+C[0]-1;
+    *(*(intervals)+1)=(domainBottom+(*(C))-1);
+    *(*(intervals))=(domainBottom);
      
     for(int i=1;i<nClasses;i++){
         for(int j=0;j<2;j++){
             if(j==0)
-                *(*(intervals+i)+j)=*(*(intervals))+(C[i]*i);
+                (*(*(intervals+i)+j))=*(*(intervals))+((*(C+i))*i);
             else
-                *(*(intervals+i)+j)=*(*(intervals)+1)+(C[i]*i);
+                (*(*(intervals+i)+j))=*(*(intervals)+1)+((*(C+i))*i);
         }
     }
 
@@ -103,7 +103,7 @@ void ArrayNumbers::findFrequencyDistribution(){
 
 }
 
-void ArrayNumbers::findBoundaries(){
+void ArrayNumbers::findBoundaries(void){
 
     float variation;
     boundaries=new float*[nClasses];
@@ -121,7 +121,7 @@ void ArrayNumbers::findBoundaries(){
     *(*(boundaries+nClasses-1)+1)=(*(*(intervals+nClasses-1)+1))+variation;
 }
 
-void ArrayNumbers::findClassMark(){
+void ArrayNumbers::findClassMark(void){
 
     X=new float[nClasses];
 
@@ -129,7 +129,7 @@ void ArrayNumbers::findClassMark(){
         *(X+i)=((*(*(intervals+i)))+(*(*(intervals+i)+1)))/2;
 }
 
-void ArrayNumbers::findRelativeAndCumulativeFr(){
+void ArrayNumbers::findRelativeAndCumulativeFr(void){
     relativeFr=new float[nClasses];
     cumulativeFr=new float[nClasses];
     relativeAcFr=new float[nClasses];
@@ -146,7 +146,7 @@ void ArrayNumbers::findRelativeAndCumulativeFr(){
 
 }
 
-void ArrayNumbers::calculateMeanMedianMode(){
+void ArrayNumbers::calculateMeanMedianMode(void){
     float *fx,sumfx=0,halfNElements=nElements/2,aux=(*(frDistribution));
     int medianClass,*sumFr,modClass=0,deltaOne,deltaTwo;
     fx=new float[nClasses];
@@ -214,7 +214,7 @@ void ArrayNumbers::showProcessedData(bool condition, bool conditionTwo){
                 lessThan=lessThan+(*(frDistribution+counter));
             }
         
-        cout<<endl;
+        cout<<endl<<endl;
             
         }
     }
@@ -226,14 +226,19 @@ void ArrayNumbers::showProcessedData(bool condition, bool conditionTwo){
     delete[] element;
     delete[] frDistribution;
     delete[] C;
+    for(int i=0;i<nClasses;i++)
+        delete[] intervals[i];
     delete[] intervals;
+    for(int i=0;i<nClasses;i++)
+        delete[] boundaries[i];
     delete[] boundaries;
     delete[] X;
     delete[] relativeFr;
     delete[] cumulativeFr;
     delete[] relativeAcFr;
 }
+
 void ArrayNumbers::showDomainAndRange(){
     cout<<"The dominium is  "<<domainBottom<<"-"<<domainTop<<endl;
     cout<<"The range is "<<range<<endl;
-} 
+}
