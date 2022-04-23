@@ -7,10 +7,16 @@ using std::endl;
 #include<cmath>
 
 #include<iomanip>
+#include<iomanip>
 using std::setw;
 using std::setprecision;
+using std::left;
+using std::fixed;
+using std::setfill;
 
 #include "ArrayNumbers.h"
+
+#define MAXDIGITSSAMP 5
 
 ArrayNumbers::ArrayNumbers(int numberElements){                     //ARCHIVO CLASE.CPP
     nElements=numberElements;
@@ -74,9 +80,9 @@ void ArrayNumbers::findFrequencyDistribution(void){
     for(int i=1;i<nClasses;i++){
         for(int j=0;j<2;j++){
             if(j==0)
-                (*(*(intervals+i)+j))=*(*(intervals))+((*(C+i))*i);
+                (*(*(intervals+i)+j))=(*(*(intervals))+((*(C+i))*i));
             else
-                (*(*(intervals+i)+j))=*(*(intervals)+1)+((*(C+i))*i);
+                (*(*(intervals+i)+j))=(*(*(intervals)+1)+((*(C+i))*i));
         }
     }
 
@@ -112,13 +118,16 @@ void ArrayNumbers::findBoundaries(void){
         boundaries[i]=new float[2];
 
     for(int i=1;i<nClasses;i++){
-        *(*(boundaries+i-1)+1)=(*(*(intervals+i))+*(*(intervals+i-1)+1))/2;
-        *(*(boundaries+i))=*(*(boundaries+i-1)+1);
+        *(*(boundaries+i-1)+1)=(*(*(intervals+i))+(*(*(intervals+i-1))+1))/2;
+        *(*(boundaries+i))=(*(*(boundaries+i-1)+1));
     }
 
-    variation=*(*(boundaries)+1)-*(*(intervals)+1);
-    *(*(boundaries))=(*(*(intervals)))-variation;
-    *(*(boundaries+nClasses-1)+1)=(*(*(intervals+nClasses-1)+1))+variation;
+    variation=(*(*(intervals))+1)-(*(*(boundaries)+1));
+    (*(*(boundaries)))=(*(*(intervals)))+variation;
+    (*(*(boundaries+nClasses-1)+1))=(*(*(intervals+nClasses-1)+1))-variation;
+
+    if((*(*(boundaries)))<0)
+        (*(*(boundaries)))=0;
 }
 
 void ArrayNumbers::findClassMark(void){
@@ -131,16 +140,16 @@ void ArrayNumbers::findClassMark(void){
 
 void ArrayNumbers::findRelativeAndCumulativeFr(void){
     relativeFr=new float[nClasses];
-    cumulativeFr=new float[nClasses];
-    relativeAcFr=new float[nClasses];
+    cumulativeFr=new float[nClasses+1];
+    relativeAcFr=new float[nClasses+1];
 
     for(int i=0;i<nClasses;i++)
         (*(relativeFr+i))=(*(frDistribution+i))*100/nElements;
 
     *(cumulativeFr)=*(relativeAcFr)=0;
 
-    for(int i=1;i<nClasses;i++){
-        *(cumulativeFr+i)=(*(cumulativeFr+i))+(*(frDistribution+i-1));
+    for(int i=1;i<=nClasses;i++){
+        *(cumulativeFr+i)=(*(cumulativeFr+i-1))+(*(frDistribution+i-1));
         *(relativeAcFr+i)=(*(cumulativeFr+i))*100/nElements;
     }
 
@@ -197,7 +206,8 @@ void ArrayNumbers::calculateMeanMedianMode(void){
 
 void ArrayNumbers::showProcessedData(bool condition, bool conditionTwo){
 
-    int counter=0,lessThan=domainBottom;
+    int counter=0;
+    float lessThan;
 
     if(condition){
 
@@ -205,18 +215,58 @@ void ArrayNumbers::showProcessedData(bool condition, bool conditionTwo){
 
         for(int i=0;i<=((2*nClasses)+1);i++){
             if((i%2)==0)
-                cout<<setw(92)<<"----------------------------------------------------------------------------------------\n";
+                cout<<left<<"----------------------------------------------------------------------------------------------"<<endl;
             else if(i==1)
-                cout<<setw(12)<<"INTERVALS"<<setw(15)<<"FREQ DISTR"<<setw(15)<<"BOUNDARIES"<<setw(15)<<"AMPLITUD"<<setw(15)<<"CLASS MARK"<<setw(15)<<"REL FREQ"<<setw(15)<<"LESS THAN"<<setw(15)<<"CUMUL FREQ"<<setw(20)<<"REL CUMUL FREQ\n";
+                cout
+                <<left<<setw(3*MAXDIGITSSAMP+4)<<"INTERVALS"
+                <<left<<setw(3*MAXDIGITSSAMP)<<"FREQ DISTR"
+                <<left<<setw(3*MAXDIGITSSAMP+4)<<"BOUNDARIES"
+                <<left<<setw(2*MAXDIGITSSAMP)<<"WIDTH"
+                <<left<<setw(3*MAXDIGITSSAMP+4)<<"CLASS MARK"
+                <<left<<setw(2*MAXDIGITSSAMP+3)<<"REL FREQ"<<endl;
             else{
-                cout<<setw(10)<<setprecision(2)<<*(*(intervals+counter))<<"-"<<setprecision(2)<<*(*(intervals+counter)+1)<<setw(13)<<*(frDistribution+counter)<<setw(13)<<setprecision(2)<<*(*(boundaries+counter))<<"-"<<setprecision(2)<<*(*(boundaries+counter)+1)<<setw(13)<<*(C+counter)<<setw(13)<<*(X+counter)<<setw(13)<<*(relativeFr+counter)<<setw(13)<<lessThan<<setw(13)<<*(cumulativeFr+counter)<<setw(16)<<*(relativeAcFr+counter)<<endl;
+                cout
+                <<left<<setw(MAXDIGITSSAMP)<<setfill(' ')<<setprecision(MAXDIGITSSAMP-2)<<fixed<<*(*(intervals+counter))       //Intervals
+                <<"-"                                                           
+                <<left<<setw(MAXDIGITSSAMP+8)<<setfill(' ')<<setprecision(MAXDIGITSSAMP-2)<<fixed<<*(*(intervals+counter)+1)     //     
+                <<left<<setw(3*MAXDIGITSSAMP)<<*(frDistribution+counter)                               //Freq distr
+                <<left<<setw(MAXDIGITSSAMP)<<setfill(' ')<<fixed<<*(*(boundaries+counter))      //Boundaries
+                <<"-"
+                <<left<<setw(MAXDIGITSSAMP+8)<<setfill(' ')<<fixed<<*(*(boundaries+counter)+1)    //
+                <<left<<setw(2*MAXDIGITSSAMP)<<setfill(' ')<<fixed<<*(C+counter)                                                         //Width
+                <<left<<setw(3*MAXDIGITSSAMP+4)<<setfill(' ')<<fixed<<*(X+counter)                                                         //Class mark
+                <<left<<setw(2*MAXDIGITSSAMP+5)<<setfill(' ')<<fixed<<*(relativeFr+counter)<<endl;                                         //Rel freq
                 counter++;
-                lessThan=lessThan+(*(frDistribution+counter));
             }
-        
-        cout<<endl<<endl;
-            
         }
+
+        counter=0;
+        cout<<endl;
+
+        for(int i=0;i<=(2*(nClasses+2));i++){
+            if((i%2)==0)
+                cout<<left<<setw(52)<<"------------------------------------------------"<<endl;
+            else if(i==1)
+                cout
+                <<left<<setw(2*MAXDIGITSSAMP+4)<<"LESS THAN"
+                <<left<<setw(3*MAXDIGITSSAMP)<<"CUMUL FREQ"
+                <<left<<setw(4*MAXDIGITSSAMP)<<"REL CUMUL FREQ"<<endl;
+            else{
+                if(counter<nClasses)
+                    lessThan=(*(*(boundaries+counter)));
+                
+                if(counter==nClasses)
+                    lessThan=(*(*(boundaries+nClasses-1)+1));
+                    
+                cout
+                <<left<<setw(2*MAXDIGITSSAMP+4)<<lessThan
+                <<left<<setw(3*MAXDIGITSSAMP)<<*(cumulativeFr+counter)
+                <<left<<setw(4*MAXDIGITSSAMP)<<setprecision(MAXDIGITSSAMP)<<*(relativeAcFr+counter)<<endl;
+                counter++;
+            }
+        }
+
+        cout<<endl<<endl;
     }
 
     if(conditionTwo){
@@ -237,6 +287,8 @@ void ArrayNumbers::showProcessedData(bool condition, bool conditionTwo){
     delete[] cumulativeFr;
     delete[] relativeAcFr;
 }
+
+
 
 void ArrayNumbers::showDomainAndRange(){
     cout<<"The dominium is  "<<domainBottom<<"-"<<domainTop<<endl;
