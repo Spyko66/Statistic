@@ -29,18 +29,16 @@ int main(){
         case 2:
             SampleData.calculateMeanMedianMode();
             SampleData.showProcessedData(scndCondition,frstCondition);
-            
         break;
 
         case 3:
             SampleData.findRelativeAndCumulativeFr();
             SampleData.calculateMeanMedianMode();
             SampleData.showProcessedData(frstCondition,frstCondition);
-
         break;
 
         default:
-        cout<<"Invalid option\n";
+            cout<<"Invalid option\n";
         break;
     }
 }

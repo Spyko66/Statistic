@@ -6,7 +6,6 @@ using std::endl;
 #include "ArrayNumbers.h"
 
 int showMenu(){
-   
     int selectedOption;
 
     cout<<"What do you want to do?\n\n";
