@@ -15,7 +15,7 @@ class ArrayNumbers{
         
     private:
         int nElements,nClasses,*frDistribution,*C;
-        float *element,domainBottom,domainTop,range,**intervals,**boundaries,*X,*relativeFr,*cumulativeFr,*relativeAcFr, mean,median,mode;
+        float *element,domainBottom,domainTop,range,**intervals,**boundaries,*X,*relativeFr,*cumulativeFr,*relativeCuFr, mean,median,mode;
 };
 
 int showMenu();

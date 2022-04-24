@@ -29,7 +29,7 @@ void ArrayNumbers::setRawData(void){
     for(int i=0;i<nElements;i++)
     {
         cout<<"Enter the number "<<(i+1)<<": \n";
-        cin>>*(element+i);
+        cin>>element[i];
     }
 }
 
@@ -38,10 +38,10 @@ void ArrayNumbers::bubbleSort(void){
 
     for(int i=0;i<nElements;i++){
         for(int j=0;j<nElements-1;j++){
-            if(*(element+j)>*(element+j+1)){
-                aux=*(element+j);
-                *(element+j)=*(element+j+1);
-                *(element+j+1)=aux;
+            if(element[j]>element[j+1]){
+                aux=element[j];
+                element[j]=element[j+1];
+                element[j+1]=aux;
             }
         }
     }
@@ -50,8 +50,8 @@ void ArrayNumbers::bubbleSort(void){
 void ArrayNumbers::findFrequencyDistribution(void){
     float cAux;
     
-    domainBottom=(*element);
-    domainTop=*(element+nElements-1);
+    domainBottom=*element;
+    domainTop=element[nElements-1];
     range=domainTop-domainBottom;
 
     showDomainAndRange();
@@ -67,41 +67,39 @@ void ArrayNumbers::findFrequencyDistribution(void){
         intervals[i]=new float[2];
 
     for(int i=0;i<nClasses;i++)
-        *(frDistribution+i)=0;
+        frDistribution[i]=0;
 
     cAux=range/nClasses;
     
     for(int i=0;i<nClasses;i++)
-        (*(C+i))=round(cAux);
+        C[i]=round(cAux);
 
-    *(*(intervals)+1)=(domainBottom+(*(C))-1);
-    *(*(intervals))=(domainBottom);
+    intervals[0][0]=domainBottom;
+    intervals[0][1]=domainBottom+C[0]-1;
      
     for(int i=1;i<nClasses;i++){
         for(int j=0;j<2;j++){
             if(j==0)
-                (*(*(intervals+i)+j))=(*(*(intervals))+((*(C+i))*i));
+                intervals[i][j]=intervals[0][0]+C[i]*i;
             else
-                (*(*(intervals+i)+j))=(*(*(intervals)+1)+((*(C+i))*i));
+                intervals[i][j]=intervals[0][1]+C[i]*i;
         }
     }
 
-    if((*(*(intervals+nClasses-1)+1))<domainTop){
-        (*(C+nClasses-1))=(*(C+nClasses-1))+(domainTop-(*(*(intervals+nClasses-1)+1)));
-        *(*(intervals+nClasses-1)+1)=domainTop;
-    }
+    if((*(*(intervals+nClasses-1)+1))<domainTop)
+        C[nClasses-1]=C[nClasses-1]+domainTop-intervals[nClasses-1][1];
 
-    if((*(*(intervals+nClasses-1)+1))>domainTop){
-        (*(C+nClasses-1))=(*(C+nClasses-1))-((*(*(intervals+nClasses-1)+1))-domainTop);
-        *(*(intervals+nClasses-1)+1)=domainTop;
-    }
+    if((*(*(intervals+nClasses-1)+1))>domainTop)
+        C[nClasses-1]=C[nClasses-1]-intervals[nClasses-1][1]-domainTop;
+        
+    intervals[nClasses-1][1]=domainTop;
 
     for(int i=0;i<nClasses;i++){
         for(int j=0;j<2;j++){
             for(int k=0;k<nElements;k++){
                 if(j==0){
-                    if((*(element+k))>=(*(*(intervals+i)))&&(*(element+k))<=(*(*(intervals+i)+1)))
-                        (*(frDistribution+i))++;
+                    if((element[k]>=intervals[i][0])&&(element[k]<=intervals[i][1]))
+                        frDistribution[i]++;
                 }
             }
         }
@@ -118,39 +116,39 @@ void ArrayNumbers::findBoundaries(void){
         boundaries[i]=new float[2];
 
     for(int i=1;i<nClasses;i++){
-        *(*(boundaries+i-1)+1)=(*(*(intervals+i))+(*(*(intervals+i-1))+1))/2;
-        *(*(boundaries+i))=(*(*(boundaries+i-1)+1));
+        boundaries[i-1][1]=(intervals[i][0]+intervals[i-1][1])/2;
+        boundaries[i][0]=boundaries[i-1][1];
     }
 
-    variation=(*(*(intervals))+1)-(*(*(boundaries)+1));
-    (*(*(boundaries)))=(*(*(intervals)))+variation;
-    (*(*(boundaries+nClasses-1)+1))=(*(*(intervals+nClasses-1)+1))-variation;
+    variation=intervals[0][1]-boundaries[0][1];
+    boundaries[0][0]=intervals[0][0]+variation;
+    boundaries[nClasses-1][1]=intervals[nClasses-1][1]-variation;
 
-    if((*(*(boundaries)))<0)
-        (*(*(boundaries)))=0;
-}
+    if(boundaries[0][0]<0)
+        boundaries[0][0]=0;
+}//
 
 void ArrayNumbers::findClassMark(void){
 
     X=new float[nClasses];
 
     for(int i=0;i<nClasses;i++)
-        *(X+i)=((*(*(intervals+i)))+(*(*(intervals+i)+1)))/2;
+        X[i]=(intervals[i][0]+intervals[i][1])/2;
 }
 
 void ArrayNumbers::findRelativeAndCumulativeFr(void){
     relativeFr=new float[nClasses];
     cumulativeFr=new float[nClasses+1];
-    relativeAcFr=new float[nClasses+1];
+    relativeCuFr=new float[nClasses+1];
 
     for(int i=0;i<nClasses;i++)
-        (*(relativeFr+i))=(*(frDistribution+i))*100/nElements;
+        relativeFr[i]=frDistribution[i]*100/nElements;
 
-    *(cumulativeFr)=*(relativeAcFr)=0;
+    cumulativeFr[0]=relativeCuFr[0]=0;
 
     for(int i=1;i<=nClasses;i++){
-        *(cumulativeFr+i)=(*(cumulativeFr+i-1))+(*(frDistribution+i-1));
-        *(relativeAcFr+i)=(*(cumulativeFr+i))*100/nElements;
+        cumulativeFr[i]=cumulativeFr[i-1]+frDistribution[i-1];
+        relativeCuFr[i]=cumulativeFr[i]*100/nElements;
     }
 
 }
@@ -163,41 +161,42 @@ void ArrayNumbers::calculateMeanMedianMode(void){
     
 
     for(int i=0;i<nClasses;i++){                    //Mean
-        (*(fx+i))=(*(frDistribution+i))*(*(X+i));
-        sumfx=sumfx+(*(fx+i));
+        fx[i]=frDistribution[i]*X[i];
+        sumfx=sumfx+fx[i];
     }
 
     mean=sumfx/nElements;
 
-    (*(sumFr))=(*(frDistribution));                 //Median
+    sumFr[0]=frDistribution[0];                 //Median
 
     for(int i=1;i<nClasses;i++){
-        (*(sumFr+i))=(*(sumFr+i-1))+(*(frDistribution+i));
-        if((halfNElements>0)&&(halfNElements<=(*(sumFr))))
+        sumFr[i]=sumFr[i-1]+frDistribution[i];
+        if((halfNElements>0)&&(halfNElements<=sumFr[0]))
             medianClass=0;
-        else if((halfNElements>(*(sumFr+i-1)))&&(halfNElements<=(*(sumFr+i))))
+        else if((halfNElements>sumFr[i-1])&&(halfNElements<=sumFr[i]))
             medianClass=i;
     }
 
     if(medianClass==0){
-        (*(sumFr))=0;
-        median=(*(*(boundaries+medianClass)))+((halfNElements-(*(sumFr)))/(*(frDistribution+medianClass)))*(*(C+medianClass));
+        sumFr[0]=0;
+        median=boundaries[medianClass][0]+((halfNElements-sumFr[0])/(frDistribution[medianClass]*C[medianClass]));
+        
     }
-    else{
-        median=(*(*(boundaries+medianClass)))+((halfNElements-(*(sumFr+medianClass-1)))/(*(frDistribution+medianClass)))*(*(C+medianClass));
-    }   
+    else
+        median=boundaries[medianClass][0]+((halfNElements-sumFr[medianClass-1])/(frDistribution[medianClass]*C[medianClass]));
+       
     
-    for(int i=0;i<nClasses;i++){                    //Mode
-        if((*(frDistribution+i))>aux){
-            aux=*((frDistribution+i));
+    for(int i=0;i<nClasses;i++){                    //Mode AQUI ME QUEDE
+        if(frDistribution[i]>aux){
+            aux=frDistribution[i];
             modClass=i;
         }
     }
 
-    deltaOne=(*(frDistribution+modClass))-(*(frDistribution+modClass-1));
-    deltaTwo=(*(frDistribution+modClass))-(*(frDistribution+modClass+1));
+    deltaOne=frDistribution[modClass]-frDistribution[modClass-1];
+    deltaTwo=frDistribution[modClass]-frDistribution[modClass+1];
 
-    mode=(*(*(boundaries+modClass)))+(deltaOne/(deltaOne+deltaTwo))*(*(C+modClass));
+    mode=boundaries[modClass][0]+(deltaOne/(deltaOne+deltaTwo))*(C[modClass]);
 
     delete[] fx;
     delete[] sumFr;
@@ -226,16 +225,16 @@ void ArrayNumbers::showProcessedData(bool condition, bool conditionTwo){
                 <<left<<setw(2*MAXDIGITSSAMP+3)<<"REL FREQ"<<endl;
             else{
                 cout
-                <<left<<setw(MAXDIGITSSAMP)<<setfill(' ')<<setprecision(MAXDIGITSSAMP-2)<<fixed<<*(*(intervals+counter))       //Intervals
+                <<left<<setw(MAXDIGITSSAMP)<<setfill(' ')<<setprecision(MAXDIGITSSAMP-2)<<fixed<<intervals[counter][0]       //Intervals
                 <<"-"                                                           
-                <<left<<setw(MAXDIGITSSAMP+8)<<setfill(' ')<<setprecision(MAXDIGITSSAMP-2)<<fixed<<*(*(intervals+counter)+1)     //     
-                <<left<<setw(3*MAXDIGITSSAMP)<<*(frDistribution+counter)                               //Freq distr
-                <<left<<setw(MAXDIGITSSAMP)<<setfill(' ')<<fixed<<*(*(boundaries+counter))      //Boundaries
+                <<left<<setw(MAXDIGITSSAMP+8)<<setfill(' ')<<setprecision(MAXDIGITSSAMP-2)<<fixed<<intervals[counter][1]     //     
+                <<left<<setw(3*MAXDIGITSSAMP)<<frDistribution[counter]                               //Freq distr
+                <<left<<setw(MAXDIGITSSAMP)<<setfill(' ')<<fixed<<boundaries[counter][0]      //Boundaries
                 <<"-"
-                <<left<<setw(MAXDIGITSSAMP+8)<<setfill(' ')<<fixed<<*(*(boundaries+counter)+1)    //
-                <<left<<setw(2*MAXDIGITSSAMP)<<setfill(' ')<<fixed<<*(C+counter)                                                         //Width
-                <<left<<setw(3*MAXDIGITSSAMP+4)<<setfill(' ')<<fixed<<*(X+counter)                                                         //Class mark
-                <<left<<setw(2*MAXDIGITSSAMP+5)<<setfill(' ')<<fixed<<*(relativeFr+counter)<<endl;                                         //Rel freq
+                <<left<<setw(MAXDIGITSSAMP+8)<<setfill(' ')<<fixed<<boundaries[counter][1]    //
+                <<left<<setw(2*MAXDIGITSSAMP)<<setfill(' ')<<fixed<<C[counter]                                                         //Width
+                <<left<<setw(3*MAXDIGITSSAMP+4)<<setfill(' ')<<fixed<<X[counter]                                                        //Class mark
+                <<left<<setw(2*MAXDIGITSSAMP+5)<<setfill(' ')<<fixed<<relativeFr[counter]<<endl;                                         //Rel freq
                 counter++;
             }
         }
@@ -260,8 +259,8 @@ void ArrayNumbers::showProcessedData(bool condition, bool conditionTwo){
                     
                 cout
                 <<left<<setw(2*MAXDIGITSSAMP+4)<<lessThan
-                <<left<<setw(3*MAXDIGITSSAMP)<<*(cumulativeFr+counter)
-                <<left<<setw(4*MAXDIGITSSAMP)<<setprecision(MAXDIGITSSAMP)<<*(relativeAcFr+counter)<<endl;
+                <<left<<setw(3*MAXDIGITSSAMP)<<cumulativeFr[counter]
+                <<left<<setw(4*MAXDIGITSSAMP)<<setprecision(MAXDIGITSSAMP)<<relativeCuFr[counter]<<endl;
                 counter++;
             }
         }
@@ -285,7 +284,7 @@ void ArrayNumbers::showProcessedData(bool condition, bool conditionTwo){
     delete[] X;
     delete[] relativeFr;
     delete[] cumulativeFr;
-    delete[] relativeAcFr;
+    delete[] relativeCuFr;
 }
 
 
